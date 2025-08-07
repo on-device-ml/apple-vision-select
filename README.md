@@ -16,20 +16,22 @@ Allows selection of photos using new features of the Apple Vision framework, inc
 
 ⚡️ To get started, assuming a ~/MyProjects project folder:
 
-1) Clone apple-vision-select to ~/MyProjects
+1) Ref  [Development and Test Environments](#development-and-test-environments)
 
-2) Use XCode to build ~/MyProjects/apple-vision-select & run
+2) Clone apple-vision-select to ~/MyProjects
 
-3) Select the folder button and choose a folder containing photos
+3) Use XCode to build ~/MyProjects/apple-vision-select & run
 
-4) Right click on any image and select an option
+4) Select the folder button to choose a folder containing photos
+
+5) Right click on any image and select an option
 
 
 ## Before We Start
 
 - 
 
-## Target Devices and O/S
+## Target Environment
 
 Modules targeted for these **Devices:**<br>
 <pre>
