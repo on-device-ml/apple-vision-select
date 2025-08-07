@@ -36,9 +36,6 @@ Modules targeted for these **Devices:**<br>
 
 ...**O/S versions:**<br>
 <pre>
-- macOS 14 Sonoma
-- macOS 15 Sequoia
-- macOS Tahoe 25 (25A5295e)
 - macOS Tahoe 25 (25A5316i)
 </pre>
 
@@ -53,9 +50,6 @@ Modules created/tested using these **Devices:**<br>
 
 ...**O/S versions:**<br>
 <pre>
-- macOS 14 Sonoma
-- macOS 15 Sequoia
-- macOS Tahoe 25 (25A5295e)
 - macOS Tahoe 25 (25A5316i)
 </pre>
 
