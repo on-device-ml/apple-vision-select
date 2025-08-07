@@ -83,6 +83,7 @@ These are some known issues:
 ## Additional References
 
 - [WWDC25: Read documents using the Vision framework](https://www.youtube.com/watch?v=H-GCNsXdKzM)
+- [Code Sample](https://developer.apple.com/documentation/vision/recognize-tables-within-a-document)
 - [WWDC24: Discover Swift enhancements in the Vision framework](https://www.youtube.com/watch?v=OkkVZJfp2MQ)
 
 
