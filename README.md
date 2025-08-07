@@ -1,6 +1,6 @@
 # apple-vision-select
 
-![apple-intelligence](https://github.com/on-device-ml/apple-vision-select/blob/main/avs-logo.jpg)
+![apple-intelligence](https://github.com/on-device-ml/apple-vision-select/blob/main/avs-screenshot.jpg)
 
 ## Overview
 
