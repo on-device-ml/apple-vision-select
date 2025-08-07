@@ -13,8 +13,8 @@
 /// - Seealso:
 ///
 ///    - WWDC25: Read documents using the Vision framework: https://www.youtube.com/watch?v=H-GCNsXdKzM
+///    - Code Sample: https://developer.apple.com/documentation/vision/recognize-tables-within-a-document
 ///    - WWDC24: Discover Swift enhancements in the Vision framework https://www.youtube.com/watch?v=OkkVZJfp2MQ
-///
 
 import Cocoa
 import Vision
@@ -22,7 +22,7 @@ import Vision
 // MARK: App Constants
 // ---------------------------------------------------------------------------
 
-struct AppConstants {
+struct AppConst {
     
     struct Strings {
         
@@ -32,8 +32,10 @@ struct AppConstants {
         static let statusDefaultMsg = "Select 􀈕 to load photos"
         static let statusPhotosLoadedMsg = "Right click on a photo for options, 􀆔-Click to select photos"
         
+        static let statusPhotosSelected = "%d of %d photos selected"
+        
         // Supported photo types
-        static let supportedPhotos = ["heic", "jpg", "jpeg", "png", "bmp", "gif", "webp"]
+        static let supportedPhotos : Set = ["heic", "jpg", "jpeg", "png", "bmp", "gif", "webp"]
 
         static let idPhotoCollViewItem = "PhotoCollectionViewItem"
    }
@@ -44,7 +46,7 @@ struct AppConstants {
         static let maxPhotos : Int = -1            // -1 = no limit
         
         // Max concurrent tasks for image processing
-        static let maxTasks = 40
+        static let maxTasks = 5
                 
         // Threshold for confirming high aesthetics photos
         static let aestheticsThreshold = Float(0.4) // Range -1 to +1
@@ -52,9 +54,8 @@ struct AppConstants {
         // Threshold for confirming smudged photos
         static let smudgeThreshold = Float(0.5)     // Range 0.0 to 1.0
 
-        // Thumbnail dimensions
-        static let thumbnailWidth = 200.0
-        static let thumbnailHeight = 200.0
+        // Thumbnail size
+        static let thumnailSize = NSMakeSize(200.0,200.0)
         
         // Maximum length of displayed paths
         static let lenDisplayedPaths = 50
@@ -62,7 +63,7 @@ struct AppConstants {
     
     struct Colors {
         
-        static let selectedColor = NSColor(named: "HighlightColor")?.cgColor //NSColor.controlAccentColor.cgColor
+        static let selectedColor = NSColor.controlAccentColor.cgColor
     }
     
     struct Prefs {
@@ -80,7 +81,8 @@ struct AppErrors {
     static let errReadPhotosInFolder = "ERROR: Reading photos in folder '%@'"
     static let errLaunchPreview = "ERROR: Unable to launch Preview application"
     static let errReadPhoto = "ERROR: Unable to load photo '%@' "
-    
+    static let errEnumPhotos = "ERROR: Reading enumerating photos in folder '%@'. Desc='%@'"
+
     static let errSecurityScopeCreateFailed = "ERROR: Unable to create security scoped folder '%@'. Desc='%@'"
     static let errSecurityScopeResolveFailed = "ERROR: Unable to resolve security scoped bookmark"
     static let errSecurityScopeAccessFailed = "ERROR: Unable to access security scoped folder '%@'"
@@ -99,6 +101,7 @@ func isValidFileURL(_ url: URL?) -> Bool {
     return url != nil && url!.isFileURL
 }
 
+@inline(__always)
 func isValidArray<T>(_ array: [T]?) -> Bool {
     guard let array = array, !array.isEmpty else {
         return false
@@ -125,6 +128,7 @@ class ViewController: NSViewController,
     var arrPhotos : Array<PhotoItem>?
     var isBusy : Bool?
     var shouldStop : Bool?
+    var arrDeferredSecurityScopes : Array<URL> = []
     
     // MARK: User Interface
     // ---------------------------------------------------------------------------
@@ -141,8 +145,8 @@ class ViewController: NSViewController,
         arrPhotos = []
 
         // CollectionView
-        let identifier = NSUserInterfaceItemIdentifier(AppConstants.Strings.idPhotoCollViewItem)
-        let nib = NSNib(nibNamed: AppConstants.Strings.idPhotoCollViewItem, bundle: nil)
+        let identifier = NSUserInterfaceItemIdentifier(AppConst.Strings.idPhotoCollViewItem)
+        let nib = NSNib(nibNamed: AppConst.Strings.idPhotoCollViewItem, bundle: nil)
         collectionViewPhotos.register(nib, forItemWithIdentifier: identifier)
         collectionViewPhotos.delegate = self
         collectionViewPhotos.dataSource = self
@@ -181,17 +185,30 @@ class ViewController: NSViewController,
         self.updateWindowTitle()
 
         // Do we have any recently used folders?
-        let arrRecentFolders = getRecentlyUsedFolders()
-        if ( isValidArray(arrRecentFolders) ) {
-            
-            let urlFolder = arrRecentFolders.last
-            if ( isValidFileURL(urlFolder) ) {
-                updateCurrentFolder(urlFolder: urlFolder!)
-                refreshPhotos(fromFolder: urlFolder!, reloadPhotos: true)
-                return
+//        let arrRecentFolders = getRecentlyUsedFolders()
+//        if ( isValidArray(arrRecentFolders) ) {
+//            
+//            let urlFolder = arrRecentFolders.last
+//            if ( isValidFileURL(urlFolder) ) {
+//                updateCurrentFolder(urlFolder: urlFolder!)
+//                refreshPhotos(fromFolder: urlFolder!, reloadPhotos: true)
+//                return
+//            }
+//        }
+        self.updateStatus(msg: AppConst.Strings.statusDefaultMsg)
+    }
+    
+    /// --------------------------------------------------------------------------------
+    /// viewWillDisappear
+    ///
+    override func viewWillDisappear() {
+        
+        // Clean up any deferred security scopes
+        if ( isValidArray(self.arrDeferredSecurityScopes) ) {
+            for urlFolder in arrDeferredSecurityScopes {
+                urlFolder.stopAccessingSecurityScopedResource()
             }
         }
-        self.updateStatus(msg: AppConstants.Strings.statusDefaultMsg)
     }
     
     /// --------------------------------------------------------------------------------
@@ -213,8 +230,8 @@ class ViewController: NSViewController,
         
         // Should we reload our photos from storage?
         if ( reloadPhotos ) {
-            DispatchQueue.global(qos: .background).async {
-                _ = self.reloadPhotos(urlFolder: fromFolder)
+            Task {
+                _ = await self.reloadPhotos(urlFolder: fromFolder)
                 self.refreshCollection()
             }
             return
@@ -325,10 +342,10 @@ class ViewController: NSViewController,
     ///
     func updateWindowTitle() {
         
-        var title = AppConstants.Strings.appTitle
+        var title = AppConst.Strings.appTitle
         if ( isValidFileURL(self.urlFolder) ) {
             let displayPath = self.abbreviatePath(path: self.urlFolder!.path.removingPercentEncoding!,
-                                             maxLength: AppConstants.Thresholds.lenDisplayedPaths)
+                                             maxLength: AppConst.Thresholds.lenDisplayedPaths)
             title = title.appendingFormat(" - %@", displayPath)
         }
         
@@ -444,7 +461,7 @@ class ViewController: NSViewController,
             #selector(openInPreview):
             return getSelectedPhotoURLs().count > 0
             
-        case #selector(selectBest),
+        case #selector(selectBestQuality),
              #selector(selectSmudged),
              #selector(selectDocsAndReceipts),
              #selector(selectAllPhotos),
@@ -474,7 +491,7 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Selects another folder
     ///
-    @objc public func selectOtherFolder() {
+    @objc public func selectOtherFolder(_ sender: NSMenuItem) {
 
         selectFolder { urlFolder in
             if urlFolder == nil {
@@ -489,7 +506,7 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Clears recent folders
     ///
-    @objc public func selectClearRecents() {
+    @objc public func selectClearRecents(_ sender: NSMenuItem) {
 
         // Do they want to proceed?
         let response = showAlert(title: "Clear Recent Folders?",
@@ -505,15 +522,15 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Selects all photos with the best aesthetics
     ///
-    @objc public func selectBest() {
+    @objc public func selectBestQuality(_ sender: NSMenuItem) {
 
         Task {
             // Select all photos with an overallScore score > aestheticsThreshold
-            await self.selectPhotosBy { pngData, photoItem in
+            await self.selectPhotosIn(urlFolder: self.urlFolder!) { pngData, photoItem in
                 do {
                     let request = CalculateImageAestheticsScoresRequest()
                     let obs = try await request.perform(on: pngData)
-                    photoItem.isSelected = (obs.overallScore>AppConstants.Thresholds.aestheticsThreshold)
+                    photoItem.isSelected = (obs.overallScore>AppConst.Thresholds.aestheticsThreshold)
                 } catch {
                     NSLog(AppErrors.errDetectAestheticsFailed,#function,photoItem.urlFile!.path)
                 }
@@ -521,19 +538,19 @@ class ViewController: NSViewController,
             }
         }
     }
-    
+        
     /// --------------------------------------------------------------------------------
     /// Selects all smudged/blurred photos
     ///
-    @objc public func selectSmudged() {
+    @objc public func selectSmudged(_ sender: NSMenuItem) {
         
         Task {
             // Select all photos with a smudge score > smudgeThreshold
-            await self.selectPhotosBy { pngData, photoItem in
+            await self.selectPhotosIn(urlFolder:self.urlFolder!) { pngData, photoItem in
                 do {
                     let request = DetectLensSmudgeRequest()
                     let obs = try await request.perform(on: pngData)
-                    photoItem.isSelected = (obs.confidence>AppConstants.Thresholds.smudgeThreshold)
+                    photoItem.isSelected = (obs.confidence>AppConst.Thresholds.smudgeThreshold)
                 } catch {
                     NSLog(AppErrors.errDetectSmudgeFailed,#function,photoItem.urlFile!.path)
                 }
@@ -545,11 +562,11 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Selects all utility photos (documents/receipts)
     ///
-    @objc public func selectDocsAndReceipts() {
+    @objc public func selectDocsAndReceipts(_ sender: NSMenuItem) {
         
         Task {
             // Select all photos with an overallScore of 0.0 and isUtility flagged
-            await self.selectPhotosBy { pngData, photoItem in
+            await self.selectPhotosIn(urlFolder:self.urlFolder!) { pngData, photoItem in
                 do {
                     let request = CalculateImageAestheticsScoresRequest()
                     let obs = try await request.perform(on: pngData)
@@ -565,33 +582,45 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Selects all photos
     ///
-    @objc public func selectAllPhotos() {
+    @objc public func selectAllPhotos(_ sender: NSMenuItem) {
         self.toggleSelectedPhotoURLs(isSelected: true)
         self.refreshCollection()
+        displayCompletionMessage(msg: String(format:AppConst.Strings.statusPhotosSelected,
+                                                        getSelectedPhotoCount(),
+                                                        getTotalPhotoCount()),
+                            usageMsg: AppConst.Strings.statusPhotosLoadedMsg)
     }
 
     /// --------------------------------------------------------------------------------
     /// Unselects all photos
     ///
-    @objc public func unselectAllPhotos() {
+    @objc public func unselectAllPhotos(_ sender: NSMenuItem) {
         self.toggleSelectedPhotoURLs(isSelected: false)
         self.refreshCollection()
+        displayCompletionMessage(msg: String(format:AppConst.Strings.statusPhotosSelected,
+                                                        getSelectedPhotoCount(),
+                                                        getTotalPhotoCount()),
+                            usageMsg: AppConst.Strings.statusPhotosLoadedMsg)
     }
 
     /// --------------------------------------------------------------------------------
     /// Inverts the current selection
     ///
-    @objc public func invertCurrentPhotoSelection() {
+    @objc public func invertCurrentPhotoSelection(_ sender: NSMenuItem) {
         for photoItem in self.arrPhotos! {
             photoItem.isSelected! = !photoItem.isSelected!
         }
         self.refreshCollection()
+        displayCompletionMessage(msg: String(format:AppConst.Strings.statusPhotosSelected,
+                                                        getSelectedPhotoCount(),
+                                                        getTotalPhotoCount()),
+                            usageMsg: AppConst.Strings.statusPhotosLoadedMsg)
     }
 
     /// --------------------------------------------------------------------------------
     /// Opens the selected photos in Finder
     ///
-    @objc public func openInFinder() {
+    @objc public func openInFinder(_ sender: NSMenuItem) {
         
         // Do we have a working folder?
         if ( !isValidFileURL(self.urlFolder) ) {
@@ -614,23 +643,26 @@ class ViewController: NSViewController,
     /// --------------------------------------------------------------------------------
     /// Opens the selected photos in Preview
     ///
-    @objc public func openInPreview() {
+    @objc public func openInPreview(_ sender: NSMenuItem) {
         
         // Do we have a working folder?
-        if ( !isValidFileURL(self.urlFolder) ) {
+        let urlFolder = sender.representedObject as? URL
+        if ( !isValidFileURL(urlFolder) ) {
             return
         }
 
         // Can we start accessing this security scoped folder?
-        if ( !(self.urlFolder!.startAccessingSecurityScopedResource()) ) {
+        if ( !(urlFolder!.startAccessingSecurityScopedResource()) ) {
             updateStatus(msg: String(format: AppErrors.errSecurityScopeAccessFailed, urlFolder!.path()))
             return
         }
         
-        defer {
-            urlFolder!.stopAccessingSecurityScopedResource()
-        }
-
+        // Add to our deferred security scopes
+        // Note: We don't stopAccessingSecurityScopedResources because Preview
+        // runs independently. Instead, we do this when we exit the app
+        //
+        self.arrDeferredSecurityScopes.append(urlFolder!)
+        
         var arrSelURLs : Array<URL> = []
         for photoItem in self.arrPhotos! {
             if ( photoItem.isSelected! ) {
@@ -670,10 +702,10 @@ class ViewController: NSViewController,
     ///
     /// - Returns: the status of the operation
     ///
-    func reloadPhotos( urlFolder: URL? ) -> Bool {
+    func reloadPhotos( urlFolder: URL ) async -> Bool {
         
         // Did we get a path?
-        guard let urlFolder = urlFolder, urlFolder.isFileURL, !urlFolder.absoluteString.isEmpty else {
+        if ( !isValidFileURL(urlFolder) ) {
             return false
         }
         
@@ -692,88 +724,146 @@ class ViewController: NSViewController,
         
         self.toggleControls(enabled: false, stopEnabled: true, progressStarted: true)
         
+        var totalPhotos : Int = 0
+        var countAdded : Int = 0
         self.isBusy = true
-        var isSuccessful : Bool = false
-        var countAdded = 0
-        let fm = FileManager.default
-        do {
-            let items = try fm.contentsOfDirectory(atPath: urlFolder.path)
-            let countTotal = items.count
-            for item in items {
-                
-                // Should we stop?
-                if ( self.shouldStop! ) {
-                    break
+
+        // Limit our concurrent tasks
+        let semaphore = AsyncSemaphore(value: AppConst.Thresholds.maxTasks)
+        
+        await withTaskGroup(of: Bool.self) { group in
+            
+            // Build an array suppoorted photo filenames in the folder
+            var photoFiles : Array<String> = []
+            do {
+                // Build an array of supported image types
+                let items = try FileManager.default.contentsOfDirectory(atPath: urlFolder.path)
+                for item in items {
+                    let fileExt = (item as NSString).pathExtension.lowercased()
+                    if AppConst.Strings.supportedPhotos.contains(fileExt) {
+                        photoFiles.append(item)
+                    }
                 }
-                
-                // Start Timer
-                let dt : DTimer = DTimer.timer(withFunc: #function, andDesc: nil) as! DTimer
-                
-                let urlFile = urlFolder.appendingPathComponent(item)
-                
-                // Is this a supported photo?
-                let fileExt = urlFile.pathExtension.lowercased()
-                if ( !AppConstants.Strings.supportedPhotos.contains(fileExt) ) {
-                    continue
-                }
-                
-                // Can we load it?
-                var photo : NSImage? = NSImage(contentsOf: urlFile)
-                if ( photo == nil ) {
-                    continue
-                }
-                
-                // Can we resize the photo?
-                let newSize = NSMakeSize(AppConstants.Thresholds.thumbnailWidth,
-                                         AppConstants.Thresholds.thumbnailHeight)
-                photo = self.resizeImage(photo!, newSize:newSize )
-                
-                // Add to array
-                let photoItem = PhotoItem()
-                photoItem.urlFile = urlFile
-                photoItem.thumbNail = photo
-                self.arrPhotos!.append(photoItem)
-                
-                // Have we added enough?
-                countAdded += 1
-                if AppConstants.Thresholds.maxPhotos != -1 &&
-                   countAdded >= AppConstants.Thresholds.maxPhotos {
-                    
-                    break
-                }
-                
-                // Record the time taken
-                let interval : TimeInterval = dt.ticks()
-                
-                // Refresh our collection
-                self.refreshCollection()
-                
-                updateStatus(msg: String(format: "Read photo %d of %d '%@' in %0.1fs...",countAdded,countTotal,item,interval))
+            } catch {
+                updateStatus(msg: String(format:AppErrors.errEnumPhotos,urlFolder.path,error.localizedDescription))
+                return
             }
-            isSuccessful = true
-            updateStatus(msg: String(format: "Read %d of %d photos",countAdded,countTotal))
-            sleep(1)
-            updateStatus(msg: AppConstants.Strings.statusPhotosLoadedMsg)
-        } catch {
-            updateStatus(msg: String(format: AppErrors.errReadPhotosInFolder, error.localizedDescription ))
+            totalPhotos = photoFiles.count
+            
+            // Fire off tasks to process each file concurrently
+            var taskCount = 0
+            for photoFile in photoFiles {
+                
+                group.addTask {
+                    
+                    // Wait for available task slot within our limit
+                    await semaphore.wait()
+                    
+                    // Have we been asked to stop?
+                    if await ( self.shouldStop! ) {
+                        await semaphore.signal()
+                        return false
+                    }
+                    
+                    // Start Timer
+                    let timer = await FunctionTimer()
+                    await timer.start()
+                    
+                    let urlFile = urlFolder.appendingPathComponent(photoFile)
+                    
+                    // Can we create a thumbnail?
+                    let thumbNail = await self.createThumbnailFor(urlImage: urlFile, size: AppConst.Thresholds.thumnailSize)
+                    if ( thumbNail == nil ) {
+                        return false
+                    }
+                    
+                    _ = await MainActor.run {
+                        let photoItem = PhotoItem()
+                        photoItem.urlFile = urlFile
+                        photoItem.thumbNail = thumbNail
+                        self.arrPhotos!.append(photoItem)
+                    }
+                    
+                    // Have we added enough photos?
+                    let maxPhotos = await AppConst.Thresholds.maxPhotos
+                    if maxPhotos != -1 && countAdded >= maxPhotos {
+                        return false
+                    }
+
+                    // Record the time taken
+                    let elapsed = await timer.stop()
+                    
+                    // Refresh the collection
+                    await self.refreshCollection()
+                    
+                    // Update the status message
+                    await self.updateStatus(msg: "Read photo \(countAdded) of \(totalPhotos) '\(photoFile)' in \(String(format: "%0.1fs", elapsed))...")
+                    
+                    // Signal completion so another task can start
+                    await semaphore.signal()
+                    
+                    return true
+                }
+                taskCount += 1
+            }
+
+            // Wait for tasks to complete
+            updateStatus(msg: String(format:"Waiting on %d active tasks...",taskCount))
+            
+            // Wait on the results as they become available
+            countAdded = 0
+            for await bSuccess in group {
+                if ( bSuccess ) {
+                    countAdded += 1
+                }
+            }
+            
+            let msg = ((countAdded == totalPhotos) ?
+                        "Read \(countAdded) of \(totalPhotos) photos" :
+                        "WARNING: Failed to read \(totalPhotos-countAdded) of \(totalPhotos) photos")
+
+            self.displayCompletionMessage(msg: msg,
+                                     usageMsg: AppConst.Strings.statusPhotosLoadedMsg)
         }
         
         self.isBusy = false
         self.shouldStop = false
         self.toggleControls(enabled: true, stopEnabled: false, progressStarted: false)
         
-        return isSuccessful
+        return (countAdded == totalPhotos)
     }
     
     /// --------------------------------------------------------------------------------
-    /// Selects photos from the array using a photo selection code block
+    /// Creates a thumbnail image from a photo url
+    ///
+    /// - Parameters:
+    ///    - urlImage the source image
+    ///
+    /// - Returns: the thumbnail image
+    ///
+    func createThumbnailFor(urlImage: URL, size: NSSize) -> NSImage? {
+        
+        // Can we load it?
+        let photo = NSImage(contentsOf: urlImage)
+        if ( photo == nil ) {
+            return nil
+        }
+        
+        // Can we resize the photo?
+        let thumbNail = self.resizeImage(photo!, newSize:size )
+        
+        return thumbNail
+    }
+    
+    /// --------------------------------------------------------------------------------
+    /// Selects photos from the array using a custom photo selection block
     ///
     /// - Parameters:
     ///    - photoSelector the code block to execute to perform the photo selection
     ///
-    func selectPhotosBy(photoSelector: @escaping (Data, PhotoItem) async -> Bool) async {
+    func selectPhotosIn(urlFolder: URL, photoSelector: @escaping (Data, PhotoItem) async -> Bool) async {
         
-        if ( !isValidFileURL(self.urlFolder) ) {
+        if ( !isValidFileURL(urlFolder) ) {
             return
         }
         self.isBusy = true
@@ -783,17 +873,17 @@ class ViewController: NSViewController,
         var countSel = 0
 
         // Can we start accessing this security scoped folder?
-        if ( !(self.urlFolder!.startAccessingSecurityScopedResource()) ) {
-            updateStatus(msg: String(format: AppErrors.errSecurityScopeAccessFailed, self.urlFolder!.path()))
+        if ( !(urlFolder.startAccessingSecurityScopedResource()) ) {
+            updateStatus(msg: String(format: AppErrors.errSecurityScopeAccessFailed, urlFolder.path()))
             return
         }
         
         defer {
-            self.urlFolder!.stopAccessingSecurityScopedResource()
+            urlFolder.stopAccessingSecurityScopedResource()
         }
 
         // Limit our concurrent tasks
-        let semaphore = AsyncSemaphore(value: AppConstants.Thresholds.maxTasks)
+        let semaphore = AsyncSemaphore(value: AppConst.Thresholds.maxTasks)
         
         await withTaskGroup(of: Bool.self) { group in
             
@@ -801,16 +891,17 @@ class ViewController: NSViewController,
             var taskCount = 0
             for photoItem in self.arrPhotos! {
                 
-                // Should we stop?
-                if ( self.shouldStop! ) {
-                    break
-                }
-                
                 group.addTask {
                     
                     // Wait for available task slot within our limit
                     await semaphore.wait()
                     
+                    // Have we been asked to stop?
+                    if await ( self.shouldStop! ) {
+                        await semaphore.signal()
+                        return false
+                    }
+
                     await self.updateStatus(msg: "Analyzing \(photoItem.urlFile!.lastPathComponent)...")
                     
                     // Can we load the image data?
@@ -839,16 +930,37 @@ class ViewController: NSViewController,
             updateStatus(msg: String(format:"Waiting on %d active tasks...",taskCount))
             for await _ in group {
             }
+            
+            let msg = (countSel > 0 ? String(format:AppConst.Strings.statusPhotosSelected,countSel,getTotalPhotoCount()) :
+                                      "No photos selected")
+            self.displayCompletionMessage(msg: msg,
+                                     usageMsg: AppConst.Strings.statusPhotosLoadedMsg)
+            
+            self.refreshPhotos(fromFolder: self.urlFolder!, reloadPhotos: false)
         }
         
-        let msg = (countSel > 0 ? "\(countSel) photos selected" : "No relevant photos detected")
-        self.updateStatus(msg: msg)
         self.isBusy = false
         self.shouldStop = false
         self.toggleControls(enabled: true, stopEnabled: false, progressStarted: false)
-        self.refreshPhotos(fromFolder: self.urlFolder!, reloadPhotos: false)
     }
 
+    /// --------------------------------------------------------------------------------
+    /// Displays a completion message, followed by a usage message
+    ///
+    /// - Parameters:
+    ///    - completionMsg: the completion message to display
+    ///    - usageMsg: the usage message to display after a delay
+    ///
+    func displayCompletionMessage(msg: String, usageMsg: String) {
+        
+        self.updateStatus(msg: msg)
+
+        // Wait some time, then update this with a usage message
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            self.updateStatus(msg: usageMsg)
+        }
+    }
+    
     /// --------------------------------------------------------------------------------
     /// Determines the URLs of all selected photos
     ///
@@ -866,6 +978,34 @@ class ViewController: NSViewController,
     }
     
     /// --------------------------------------------------------------------------------
+    /// Determines the total number of  photos in the current folder
+    ///
+    /// - Returns: the total number of  photos in the current folder
+    ///
+    func getTotalPhotoCount() -> Int {
+        if ( self.arrPhotos == nil ) {
+            return 0
+        }
+        return self.arrPhotos!.count
+    }
+    
+    /// --------------------------------------------------------------------------------
+    /// Determines the number of currently selected photos
+    ///
+    /// - Returns: the URLs of the currently selected photos
+    ///
+    func getSelectedPhotoCount() -> Int {
+        
+        var countSel = 0
+        for photoItem in self.arrPhotos! {
+            if ( photoItem.isSelected! ) {
+                countSel += 1
+            }
+        }
+        return countSel
+    }
+    
+    /// --------------------------------------------------------------------------------
     /// Toggles the selection state of the photos in the array
     ///
     /// - Parameters:
@@ -873,8 +1013,8 @@ class ViewController: NSViewController,
     ///
     func toggleSelectedPhotoURLs(isSelected: Bool) {
         
-        for pi in self.arrPhotos! {
-            pi.isSelected! = isSelected
+        for photoItem in self.arrPhotos! {
+            photoItem.isSelected! = isSelected
         }
     }
   
@@ -902,7 +1042,7 @@ class ViewController: NSViewController,
     private func getRecentlyUsedFolders() -> Array<URL> {
 
         // Do we have any previously saved recent folders?
-        let arrRecentFolderBookmarks = UserDefaults.standard.array(forKey: AppConstants.Prefs.recentFolders) as? Array<Data>
+        let arrRecentFolderBookmarks = UserDefaults.standard.array(forKey: AppConst.Prefs.recentFolders) as? Array<Data>
         if ( !isValidArray(arrRecentFolderBookmarks) ) {
             return []
         }
@@ -933,11 +1073,11 @@ class ViewController: NSViewController,
     }
     
     /// --------------------------------------------------------------------------------
-    /// Saves the specified last used model pair to UserDefaults
+    /// Saves the specified last used URL to UserDefaults
     ///
-    /// The model pairs are ordered in the array so they appear in recently used
+    /// The URLs are ordered in the array so they appear in recently used
     /// order when displayed in a menu. To support App sandboxing, the recently
-    /// used model pairs are stored as security scoped bookmarks (Data)
+    /// used URLs are stored as security scoped bookmarks (Data)
     ///
     /// - Parameters:
     ///    - urlFolder the folder to save
@@ -954,8 +1094,8 @@ class ViewController: NSViewController,
         var folderBookmark : Data?
         var arrNewFolderBookmarks : Array<Data> = []
 
-        // Do we have any existing model pairs in prefs?
-        let arrFolderBookmarks : Array<Data>? = UserDefaults.standard.array(forKey: AppConstants.Prefs.recentFolders) as? Array<Data>
+        // Do we have any existing recently used URLs in prefs?
+        let arrFolderBookmarks : Array<Data>? = UserDefaults.standard.array(forKey: AppConst.Prefs.recentFolders) as? Array<Data>
         if ( isValidArray(arrFolderBookmarks) ) {
             
             // Yes, clone to a new mutable copy
@@ -984,7 +1124,7 @@ class ViewController: NSViewController,
             arrNewFolderBookmarks=Array()
         }
 
-        // Should we create a new bookmarked model pair?
+        // Should we create a new bookmarked URL?
         if ( folderBookmark == nil ) {
             do {
                 folderBookmark = try urlFolder.bookmarkData(options:.withSecurityScope)
@@ -994,10 +1134,10 @@ class ViewController: NSViewController,
             }
         }
         
-        // Append this model pair as the most recently used
+        // Append this URL bookmark as the most recently used
         arrNewFolderBookmarks.append(folderBookmark!)
         UserDefaults.standard.set(arrNewFolderBookmarks,
-                            forKey: AppConstants.Prefs.recentFolders)
+                            forKey: AppConst.Prefs.recentFolders)
          
         UserDefaults.standard.synchronize()
         
@@ -1009,7 +1149,7 @@ class ViewController: NSViewController,
     ///
     private func clearRecentlyUsedFolders() {
         
-        UserDefaults.standard.removeObject(forKey: AppConstants.Prefs.recentFolders)
+        UserDefaults.standard.removeObject(forKey: AppConst.Prefs.recentFolders)
         UserDefaults.standard.synchronize()
     }
     
@@ -1120,7 +1260,7 @@ class ViewController: NSViewController,
     func collectionView(_ collectionView: NSCollectionView,
                         itemForRepresentedObjectAt indexPath: IndexPath) -> NSCollectionViewItem {
 
-        let pvi = self.collectionViewPhotos.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(AppConstants.Strings.idPhotoCollViewItem),
+        let pvi = self.collectionViewPhotos.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(AppConst.Strings.idPhotoCollViewItem),
                                                       for: indexPath) as! PhotoCollectionViewItem
         
         let photoItem : PhotoItem = self.arrPhotos![indexPath.item]

@@ -47,7 +47,7 @@ class PhotoCollectionViewItem: NSCollectionViewItem {
     override var isSelected: Bool {
         didSet {
             view.layer?.borderWidth = isSelected ? 3 : 0
-            view.layer?.borderColor = isSelected ? AppConstants.Colors.selectedColor : nil
+            view.layer?.borderColor = isSelected ? AppConst.Colors.selectedColor : nil
             view.layer?.backgroundColor = isSelected ? NSColor.selectedContentBackgroundColor.cgColor : NSColor.clear.cgColor
         }
     }
@@ -72,8 +72,8 @@ class PhotoCollectionViewItem: NSCollectionViewItem {
         var menuItem : NSMenuItem?
         
         // Items
-        menuItem = NSMenuItem(title: "Select Best Photos",
-                                   action: #selector(ViewController.selectBest),
+        menuItem = NSMenuItem(title: "Select Best Quality Photos",
+                                   action: #selector(ViewController.selectBestQuality),
                                    keyEquivalent: "")
         menuItem!.target = vcParent
         menu.addItem(menuItem!)
@@ -125,6 +125,7 @@ class PhotoCollectionViewItem: NSCollectionViewItem {
                               action: #selector(ViewController.openInPreview),
                                    keyEquivalent: "")
         menuItem!.target = vcParent
+        menuItem!.representedObject = vcParent!.urlFolder
         menu.addItem(menuItem!)
 
         let location = gesture.location(in: self.view)

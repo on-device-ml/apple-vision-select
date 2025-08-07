@@ -18,7 +18,7 @@ Allows selection of photos using new features of the Apple Vision framework, inc
 
 2) Use XCode to build ~/MyProjects/apple-vision-select & run
 
-3) Select a folder 􀈕
+3) Select the folder button and choose a folder containing photos
 
 4) Right click on any image and select an option
 

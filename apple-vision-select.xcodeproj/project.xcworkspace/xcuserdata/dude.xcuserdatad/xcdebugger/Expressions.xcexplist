@@ -3,10 +3,10 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "ViewController.reloadPhotos(urlFolder:):ViewController.swift">
+         contextName = "PhotoCollectionViewItem.rightClickGestureHandler(_:):PhotoCollectionViewItem.swift">
          <PersistentStrings>
             <PersistentString
-               value = "shouldStop">
+               value = "vcParent">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -27,6 +27,14 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "ViewController.viewWillDisappear():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.arrDeferredSecurityScopes">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "ViewController.viewDidLoad():ViewController.swift">
          <PersistentStrings>
             <PersistentString
@@ -35,10 +43,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "PhotoCollectionViewItem.rightClickGestureHandler(_:):PhotoCollectionViewItem.swift">
+         contextName = "ViewController.reloadPhotos(urlFolder:):ViewController.swift">
          <PersistentStrings>
             <PersistentString
-               value = "vcParent">
+               value = "shouldStop">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
