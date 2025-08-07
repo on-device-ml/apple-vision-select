@@ -5,20 +5,22 @@
 ## Overview
 
 Allows selection of photos using new features of the Apple Vision framework, including:
-    - Select Photos with Best Aesthetics
-    - Select Smudged/Blurred Photos
-    - Select Documents & Receipts
+    - Select Photos with Best Aesthetics<br>
+    - Select Smudged/Blurred Photos<br>
+    - Select Documents & Receipts<br>
 
 
 ## Quick Start
 
 ⚡️ To get started, assuming a ~/MyProjects project folder:
 
-1) Clone apple-intelligence to ~/MyProjects
+1) Clone apple-vision-select to ~/MyProjects
 
-2) Use XCode to build ~/MyProjects/apple-intelligence/apple-afm-hello & run
+2) Use XCode to build ~/MyProjects/apple-vision-select & run
 
-3) Enter a question then select ⏵
+3) Select a folder 􀈕
+
+4) Right click on any image and select an option
 
 
 ## Before We Start
@@ -69,7 +71,7 @@ Modules created/tested using these **Devices:**<br>
 Developed & tested mainly in dark mode 🌙
 </pre>
 
-## Using apple-afm-hello
+## Using apple-vision-select
 
     
 ## Known Issues/Observations
@@ -84,6 +86,7 @@ These are some known issues:
 
 - [WWDC25: Read documents using the Vision framework](https://www.youtube.com/watch?v=H-GCNsXdKzM)
 - [WWDC24: Discover Swift enhancements in the Vision framework](https://www.youtube.com/watch?v=OkkVZJfp2MQ)
+
 
 ## Feedback and Contributions
 
