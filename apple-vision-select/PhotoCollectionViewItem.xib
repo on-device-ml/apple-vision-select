@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24112" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24112"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="PhotoCollectionViewItem" customModule="apple_vision_select" customModuleProvider="target">
+            <connections>
+                <outlet property="imageViewPhoto" destination="oz0-dV-Ngs" id="Mrp-u5-fne"/>
+                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="Hz6-mo-xeY">
+            <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oz0-dV-Ngs">
+                    <rect key="frame" x="0.0" y="0.0" width="200" height="200"/>
+                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="fNC-cU-1Us"/>
+                </imageView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="oz0-dV-Ngs" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" id="7vY-bz-6us"/>
+                <constraint firstItem="oz0-dV-Ngs" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" id="az2-cP-7kL"/>
+                <constraint firstAttribute="bottom" secondItem="oz0-dV-Ngs" secondAttribute="bottom" id="ghf-pc-yte"/>
+                <constraint firstAttribute="trailing" secondItem="oz0-dV-Ngs" secondAttribute="trailing" id="pse-3w-Oa9"/>
+            </constraints>
+            <point key="canvasLocation" x="-575.5" y="-228"/>
+        </customView>
+        <collectionViewItem id="TZN-E8-Ssq" customClass="PhotoCollectionViewItem" customModule="apple_vision_select" customModuleProvider="target"/>
+    </objects>
+</document>

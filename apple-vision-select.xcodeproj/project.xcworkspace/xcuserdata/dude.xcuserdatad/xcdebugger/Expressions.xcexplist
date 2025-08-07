@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "ViewController.reloadPhotos(urlFolder:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "shouldStop">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in ViewController.selectBestPhotos():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.arrPhotos">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.selectPhotosBy(photoSelector:):ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.urlFolder">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ViewController.viewDidLoad():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "photosPath">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "PhotoCollectionViewItem.rightClickGestureHandler(_:):PhotoCollectionViewItem.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "vcParent">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
