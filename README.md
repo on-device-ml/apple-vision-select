@@ -2,6 +2,8 @@
 
 ![apple-intelligence](https://github.com/on-device-ml/apple-vision-select/blob/main/avs-screenshot.jpg)
 
+[Watch the video](https://youtu.be/1yFvaguALEk)
+
 ## Overview
 
 Allows selection of photos using new features of the Apple Vision framework.<br>
