@@ -1,5 +1,7 @@
 # apple-vision-select
 
+Explores new features of the 2025 Apple Vision Framework via a simple image browser
+
 ![apple-intelligence](https://github.com/on-device-ml/apple-vision-select/blob/main/avs-screenshot.jpg)
 
 [Watch the video](https://youtu.be/1yFvaguALEk)
