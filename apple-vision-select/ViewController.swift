@@ -51,6 +51,9 @@ struct AppConst {
         // Threshold for confirming high aesthetics photos
         static let aestheticsThreshold = Float(0.4) // Range -1 to +1
 
+        // Threshold for confirming face capture quality
+        static let faceDetectionThreshold = Float(0.1) // Range 0.0 to 1.0
+
         // Threshold for confirming smudged photos
         static let smudgeThreshold = Float(0.5)     // Range 0.0 to 1.0
 
@@ -462,6 +465,7 @@ class ViewController: NSViewController,
             return getSelectedPhotoURLs().count > 0
             
         case #selector(selectBestQuality),
+             #selector(selectPhotosWithFaces),
              #selector(selectSmudged),
              #selector(selectDocsAndReceipts),
              #selector(selectAllPhotos),
@@ -539,6 +543,35 @@ class ViewController: NSViewController,
         }
     }
         
+    /// --------------------------------------------------------------------------------
+    /// Selects all photos with faces
+    ///
+    @objc public func selectPhotosWithFaces(_ sender: NSMenuItem) {
+
+        Task {
+            // Select all photos with an overallScore score > aestheticsThreshold
+            await self.selectPhotosIn(urlFolder: self.urlFolder!) { pngData, photoItem in
+                do {
+                    let request = DetectFaceCaptureQualityRequest()
+                    let arrFaceObservations = try await request.perform(on: pngData)
+                    
+                    // Determine if there was at least 1 observed high quality face capture
+                    for faceObs in arrFaceObservations {
+                        // Use this to determine actual quality of the capture
+                        //if (faceObs.captureQuality!.score>AppConst.Thresholds.faceCaptureQualityThreshold) {
+                        if (faceObs.confidence>AppConst.Thresholds.faceDetectionThreshold) {
+                            photoItem.isSelected = true
+                            break
+                        }
+                    }
+                } catch {
+                    NSLog(AppErrors.errDetectAestheticsFailed,#function,photoItem.urlFile!.path)
+                }
+                return photoItem.isSelected!
+            }
+        }
+    }
+
     /// --------------------------------------------------------------------------------
     /// Selects all smudged/blurred photos
     ///

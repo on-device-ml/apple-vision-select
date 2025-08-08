@@ -78,6 +78,12 @@ class PhotoCollectionViewItem: NSCollectionViewItem {
         menuItem!.target = vcParent
         menu.addItem(menuItem!)
 
+        menuItem = NSMenuItem(title: "Select Photos with Faces",
+                                   action: #selector(ViewController.selectPhotosWithFaces),
+                                   keyEquivalent: "")
+        menuItem!.target = vcParent
+        menu.addItem(menuItem!)
+
         menuItem = NSMenuItem(title: "Select Blurred Photos",
                              action: #selector(ViewController.selectSmudged),
                       keyEquivalent: "")
