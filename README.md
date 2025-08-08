@@ -34,7 +34,7 @@ Features include:
 
 ## Before We Start
 
-- Requires macOS Tahoe 25+ and above
+- Requires macOS Tahoe 26+
 - Requires building with XCode 26+
 
 
@@ -47,7 +47,7 @@ Modules targeted for these **Devices:**<br>
 
 ...**O/S versions:**<br>
 <pre>
-- macOS Tahoe 25 (25A5316i)
+- macOS Tahoe 26 (25A5316i)
 </pre>
 
 
@@ -62,7 +62,7 @@ Modules created/tested using these **Devices:**<br>
 
 ...**O/S versions:**<br>
 <pre>
-- macOS Tahoe 25 (25A5316i)
+- macOS Tahoe 26 (25A5316i)
 </pre>
 
 ...**XCode versions:**<br>
