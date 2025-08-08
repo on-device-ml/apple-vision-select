@@ -47,7 +47,7 @@ Modules targeted for these **Devices:**<br>
 
 ...**O/S versions:**<br>
 <pre>
-- macOS Tahoe 26 (25A5316i)
+- macOS Tahoe 26+
 </pre>
 
 
@@ -67,8 +67,8 @@ Modules created/tested using these **Devices:**<br>
 
 ...**XCode versions:**<br>
 <pre>
-- XCode 26.0 beta (17A5241e)
-- XCode 26.0 beta (17A5285i)
+- XCode 26 beta (17A5241e)
+- XCode 26 beta (17A5285i)
 </pre>
     
 ...**Themes:**<br>
