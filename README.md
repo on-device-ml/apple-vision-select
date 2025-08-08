@@ -8,8 +8,7 @@ Allows selection of photos using new features of the Apple Vision framework, inc
     - Select Photos with Best Aesthetics<br>
     - Select Smudged/Blurred Photos<br>
     - Select Documents & Receipts<br>
-    - Select Photos with Faces/Capture Quality<br><br>
-    
+    - Select Photos with Faces/Capture Quality<br>
     - Open Selected in Finder<br>
     - Open Selected in Preview<br>
 
