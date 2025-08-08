@@ -7,13 +7,13 @@
 Allows selection of photos using new features of the Apple Vision framework, including:<br><br>
     - Select Photos with Best Aesthetics<br>
     - Select Smudged/Blurred Photos<br>
-    - Select Documents & Receipts<br><br>
+    - Select Documents & Receipts<br>
     - Select Photos with Faces/Capture Quality<br><br>
     
     - Open Selected in Finder<br>
     - Open Selected in Preview<br>
 
-
+<br>
 ## Quick Start
 
 ⚡️ To get started, assuming a ~/MyProjects project folder:
@@ -22,19 +22,19 @@ Allows selection of photos using new features of the Apple Vision framework, inc
 
 2) Clone apple-vision-select to ~/MyProjects
 
-3) Use XCode to build ~/MyProjects/apple-vision-select & run
+3) Use XCode to build ~/MyProjects/apple-vision-select
 
-4) Select the folder button to choose a folder containing photos
+4) Run & select the folder button to choose a folder containing photos
 
 5) Right click on any image and select an option
 
-
+<br>
 ## Before We Start
 
 - Requires macOS Tahoe 25+ and above
 - Requires building with XCode 26+
 
-
+<br>
 ## Target Environment
 
 Modules targeted for these **Devices:**<br>
@@ -47,6 +47,7 @@ Modules targeted for these **Devices:**<br>
 - macOS Tahoe 25 (25A5316i)
 </pre>
 
+<br>
 ## Development and Test Environments
 
 Modules created/tested using these **Devices:**<br>
@@ -72,18 +73,13 @@ Modules created/tested using these **Devices:**<br>
 Developed & tested mainly in dark mode 🌙
 </pre>
 
-## Using apple-vision-select
-
-- Run the app
-- Use the folder button on the top right to select a folder with photos
-- Once loaded, right click on any folder for options
-    
+<br>
 ## Additional References
 
 - [WWDC25: Read documents using the Vision framework](https://www.youtube.com/watch?v=H-GCNsXdKzM). [Code Sample](https://developer.apple.com/documentation/vision/recognize-tables-within-a-document)
 - [WWDC24: Discover Swift enhancements in the Vision framework](https://www.youtube.com/watch?v=OkkVZJfp2MQ)
 
-
+<br>
 ## Feedback and Contributions
 
 Feedback & suggestions are welcome! Please, feel free to [get in touch](https://github.com/apple-vision-select).
