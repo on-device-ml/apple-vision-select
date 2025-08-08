@@ -8,6 +8,8 @@ Allows selection of photos using new features of the Apple Vision framework, inc
     - Select Photos with Best Aesthetics<br>
     - Select Smudged/Blurred Photos<br>
     - Select Documents & Receipts<br><br>
+    - Select Photos with Faces/Capture Quality<br><br>
+    
     - Open Selected in Finder<br>
     - Open Selected in Preview<br>
 
@@ -29,7 +31,9 @@ Allows selection of photos using new features of the Apple Vision framework, inc
 
 ## Before We Start
 
-- 
+- Requires macOS Tahoe 25+ and above
+- Requires building with XCode 26+
+
 
 ## Target Environment
 
@@ -59,7 +63,6 @@ Modules created/tested using these **Devices:**<br>
 
 ...**XCode versions:**<br>
 <pre>
-- XCode 16.4 (16F6)
 - XCode 26.0 beta (17A5241e)
 - XCode 26.0 beta (17A5285i)
 </pre>
@@ -71,19 +74,13 @@ Developed & tested mainly in dark mode 🌙
 
 ## Using apple-vision-select
 
+- Run the app
+- Use the folder button on the top right to select a folder with photos
+- Once loaded, right click on any folder for options
     
-## Known Issues/Observations
-
-These are some known issues:
-<pre>
-1. <br>
-</pre>
-
-
 ## Additional References
 
-- [WWDC25: Read documents using the Vision framework](https://www.youtube.com/watch?v=H-GCNsXdKzM)
-- [Code Sample](https://developer.apple.com/documentation/vision/recognize-tables-within-a-document)
+- [WWDC25: Read documents using the Vision framework](https://www.youtube.com/watch?v=H-GCNsXdKzM). [Code Sample](https://developer.apple.com/documentation/vision/recognize-tables-within-a-document)
 - [WWDC24: Discover Swift enhancements in the Vision framework](https://www.youtube.com/watch?v=OkkVZJfp2MQ)
 
 

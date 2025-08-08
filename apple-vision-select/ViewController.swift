@@ -9,6 +9,7 @@
 ///         - Select Photos with Best Aesthetics
 ///         - Select Smudged/Blurred Photos
 ///         - Select Documents & Receipts
+///         - Select Photos with Faces/Capture Quality
 ///
 /// - Seealso:
 ///
@@ -51,9 +52,12 @@ struct AppConst {
         // Threshold for confirming high aesthetics photos
         static let aestheticsThreshold = Float(0.4) // Range -1 to +1
 
-        // Threshold for confirming face capture quality
-        static let faceDetectionThreshold = Float(0.1) // Range 0.0 to 1.0
+        // Threshold for confirming face detection
+        static let faceDetectionThreshold = Float(0.2) // Range 0.0 to 1.0
 
+        // Threshold for confirming face capture quality
+        //static let faceCaptureQualityThreshold = Float(0.5)
+        
         // Threshold for confirming smudged photos
         static let smudgeThreshold = Float(0.5)     // Range 0.0 to 1.0
 
@@ -529,6 +533,9 @@ class ViewController: NSViewController,
     @objc public func selectBestQuality(_ sender: NSMenuItem) {
 
         Task {
+            
+            self.unselectAllPhotos(sender)
+            
             // Select all photos with an overallScore score > aestheticsThreshold
             await self.selectPhotosIn(urlFolder: self.urlFolder!) { pngData, photoItem in
                 do {
@@ -549,7 +556,10 @@ class ViewController: NSViewController,
     @objc public func selectPhotosWithFaces(_ sender: NSMenuItem) {
 
         Task {
-            // Select all photos with an overallScore score > aestheticsThreshold
+            
+            self.unselectAllPhotos(sender)
+            
+            // Select all photos with a confidence score > faceDetectionThreshold
             await self.selectPhotosIn(urlFolder: self.urlFolder!) { pngData, photoItem in
                 do {
                     let request = DetectFaceCaptureQualityRequest()
@@ -578,6 +588,9 @@ class ViewController: NSViewController,
     @objc public func selectSmudged(_ sender: NSMenuItem) {
         
         Task {
+            
+            self.unselectAllPhotos(sender)
+            
             // Select all photos with a smudge score > smudgeThreshold
             await self.selectPhotosIn(urlFolder:self.urlFolder!) { pngData, photoItem in
                 do {
@@ -598,6 +611,9 @@ class ViewController: NSViewController,
     @objc public func selectDocsAndReceipts(_ sender: NSMenuItem) {
         
         Task {
+            
+            self.unselectAllPhotos(sender)
+            
             // Select all photos with an overallScore of 0.0 and isUtility flagged
             await self.selectPhotosIn(urlFolder:self.urlFolder!) { pngData, photoItem in
                 do {

@@ -14,8 +14,8 @@
             filePath = "apple-vision-select/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "975"
-            endingLineNumber = "975"
+            startingLineNumber = "991"
+            endingLineNumber = "991"
             landmarkName = "selectPhotosIn(urlFolder:photoSelector:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "apple-vision-select/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "863"
-            endingLineNumber = "863"
+            startingLineNumber = "879"
+            endingLineNumber = "879"
             landmarkName = "reloadPhotos(urlFolder:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "apple-vision-select/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "833"
-            endingLineNumber = "833"
+            startingLineNumber = "849"
+            endingLineNumber = "849"
             landmarkName = "reloadPhotos(urlFolder:)"
             landmarkType = "7">
          </BreakpointContent>
