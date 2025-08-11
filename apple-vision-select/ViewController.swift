@@ -1032,6 +1032,7 @@ class ViewController: NSViewController,
     /// - Returns: the total number of  photos in the current folder
     ///
     func getTotalPhotoCount() -> Int {
+
         if ( self.arrPhotos == nil ) {
             return 0
         }
@@ -1045,6 +1046,9 @@ class ViewController: NSViewController,
     ///
     func getSelectedPhotoCount() -> Int {
         
+        if ( self.arrPhotos == nil ) {
+            return 0
+        }
         var countSel = 0
         for photoItem in self.arrPhotos! {
             if ( photoItem.isSelected! ) {
@@ -1062,6 +1066,9 @@ class ViewController: NSViewController,
     ///
     func toggleSelectedPhotoURLs(isSelected: Bool) {
         
+        if ( self.arrPhotos == nil ) {
+            return
+        }
         for photoItem in self.arrPhotos! {
             photoItem.isSelected! = isSelected
         }
@@ -1081,7 +1088,7 @@ class ViewController: NSViewController,
     }
 
     /// --------------------------------------------------------------------------------
-    /// Retrieves the recently used folders from UserDefaults
+    /// Retrieves the recently used folder URLs from UserDefaults
     ///
     /// To support App sandboxing, the recently used folders are stored as security
     /// scoped bookmarks (Data). This method converts them back to URLs.
@@ -1122,7 +1129,7 @@ class ViewController: NSViewController,
     }
     
     /// --------------------------------------------------------------------------------
-    /// Saves the specified last used URL to UserDefaults
+    /// Saves the specified recently used folder URL to UserDefaults
     ///
     /// The URLs are ordered in the array so they appear in recently used
     /// order when displayed in a menu. To support App sandboxing, the recently
@@ -1194,7 +1201,7 @@ class ViewController: NSViewController,
     }
     
     /// --------------------------------------------------------------------------------
-    /// Clears the recently used folders in UserDefaults
+    /// Clears the recently used folder URLs in UserDefaults
     ///
     private func clearRecentlyUsedFolders() {
         
@@ -1292,7 +1299,7 @@ class ViewController: NSViewController,
     /// - Returns:the number of items in the section
     ///
     func collectionView(_ collectionView: NSCollectionView,
-                    numberOfItemsInSection section: Int) -> Int {
+          numberOfItemsInSection section: Int) -> Int {
         
         return Int(arrPhotos!.count)
     }
@@ -1328,8 +1335,11 @@ class ViewController: NSViewController,
     ///   - indexPaths: the indices of items that were selected
     ///
     func collectionView(_ collectionView: NSCollectionView,
-                        didSelectItemsAt indexPaths: Set<IndexPath>) {
+             didSelectItemsAt indexPaths: Set<IndexPath>) {
         
+        if ( self.arrPhotos == nil ) {
+            return
+        }
         guard indexPaths.first != nil else { return }
         
         for indexPath in indexPaths {
@@ -1345,8 +1355,11 @@ class ViewController: NSViewController,
     ///   - indexPaths: the indices of items that were deselected
     ///
     func collectionView(_ collectionView: NSCollectionView,
-                        didDeselectItemsAt indexPaths: Set<IndexPath>) {
+           didDeselectItemsAt indexPaths: Set<IndexPath>) {
         
+        if ( self.arrPhotos == nil ) {
+            return
+        }
         guard indexPaths.first != nil else { return }
         
         for indexPath in indexPaths {
@@ -1371,6 +1384,9 @@ class ViewController: NSViewController,
                         layout collectionViewLayout: NSCollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> NSSize {
         
+        if ( self.arrPhotos == nil ) {
+            return NSZeroSize
+        }
         let photo = self.arrPhotos![indexPath.item].thumbNail
         return photo!.size
     }
