@@ -91,4 +91,4 @@ Developed & tested mainly in dark mode 🌙
 
 ## Feedback and Contributions
 
-Feedback & suggestions are welcome! Please, feel free to [get in touch](https://github.com/apple-vision-select).
+Feedback & suggestions are welcome! Please, feel free to [get in touch](https://github.com/on-device-ml/apple-vision-select/issues/new).
